@@ -30,16 +30,11 @@ object DynamicFileDSL {
   private val dirContext: DynamicVariable[Option[DirectoryDescription]] = new DynamicVariable(None)
   
   private def addDirToDir(dir: DirectoryDescription) = {
-    dirContext.value = dirContext.value.map { parent =>
-      DirectoryDescription(parent.name, dir :: parent.subdirs, parent.files)
-    }
-    dir
+    dirContext.value = dirContext.value.map { parent => parent.copy(subdirs = dir :: parent.subdirs) }
   }
   
   private def addFileToDir(file: FileDescription) = {
-    dirContext.value = dirContext.value.map { parent =>
-      DirectoryDescription(parent.name, parent.subdirs, file :: parent.files)
-    }
+    dirContext.value = dirContext.value.map { parent => parent.copy(files = file :: parent.files) }
     file
   }
   
@@ -49,6 +44,7 @@ object DynamicFileDSL {
       dirContext.value.get
     }
     addDirToDir(dir)
+    dir
   }
   
   def tempDir(contents: =>Unit) = directory(new java.io.File(java.lang.System.getProperty("java.io.tmpdir")).getCanonicalPath())(contents)
@@ -57,10 +53,7 @@ object DynamicFileDSL {
   private val fileContext: DynamicVariable[Option[FileDescription]] = new DynamicVariable(None)
 
   private def addContentToFile(contents: java.io.OutputStream=>Unit) = {
-    fileContext.value = fileContext.value.map { file =>
-      FileDescription(file.name, { out => file.contents(out); contents(out) })
-    }
-    contents
+    fileContext.value = fileContext.value.map { file => file.copy(contents = { out => file.contents(out); contents(out) }) }
   }
   
   def file(name: String)(contents: =>Unit): FileDescription = {
