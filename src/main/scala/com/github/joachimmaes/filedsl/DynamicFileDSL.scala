@@ -15,6 +15,24 @@ import scala.util.DynamicVariable
  *     }
  *   }  
  * </pre>
+ * 
+ * Another major drawback of this implementation is that this doesn't quite specify what you would expect.
+ * E.g. the following yields two empty directories 'a' and 'b':
+ * 
+ * <pre>
+ *   val common = directory("common") {
+ *     file("LICENSE", contents = "...")
+ *     file("README", contents = "...")
+ *   }
+ *   
+ *   directory("a") {
+ *     common
+ *   }
+ *   
+ *   directory("b") {
+ *     common
+ *   }
+ * </pre>
  *  
  * @author Joachim Maes                                           
  */
